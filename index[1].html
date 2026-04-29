@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PassionTrack — Student Innovation Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L3 7l9 5 9-5-9-5zM3 17l9 5 9-5M3 12l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="brand-name">PassionTrack</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-view="dashboard">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="#" class="nav-item" data-view="profile">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Student Profile
+    </a>
+    <a href="#" class="nav-item" data-view="sessions">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Sessions
+    </a>
+    <a href="#" class="nav-item" data-view="milestones">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Milestones
+    </a>
+    <a href="#" class="nav-item" data-view="analytics">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </a>
+    <a href="#" class="nav-item" data-view="students">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      All Students
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn-export" onclick="exportToExcel()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export Excel
+    </button>
+    <button class="btn-export secondary" onclick="exportToCSV()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content" id="mainContent">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search students, sessions…" oninput="handleSearch(this.value)" />
+      </div>
+    </div>
+    <div class="topbar-right">
+      <select id="filterGrade" onchange="applyFilters()" class="top-filter">
+        <option value="">All Grades</option>
+        <option>Grade 6</option><option>Grade 7</option><option>Grade 8</option>
+        <option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
+      </select>
+      <select id="filterStatus" onchange="applyFilters()" class="top-filter">
+        <option value="">All Status</option>
+        <option>Not Started</option><option>In Progress</option>
+        <option>Under Review</option><option>Completed</option><option>On Hold</option>
+      </select>
+      <button class="btn-new" onclick="showNewStudentModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Student
+      </button>
+    </div>
+  </header>
+
+  <!-- VIEW: DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="view-header">
+      <h1>Dashboard Overview</h1>
+      <p>Track all student passion projects at a glance</p>
+    </div>
+
+    <div class="summary-grid" id="summaryGrid">
+      <div class="summary-card accent-blue">
+        <div class="sc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="sc-info">
+          <span class="sc-num" id="totalStudents">0</span>
+          <span class="sc-label">Total Students</span>
+        </div>
+      </div>
+      <div class="summary-card accent-green">
+        <div class="sc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="sc-info">
+          <span class="sc-num" id="completedProjects">0</span>
+          <span class="sc-label">Completed</span>
+        </div>
+      </div>
+      <div class="summary-card accent-amber">
+        <div class="sc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="sc-info">
+          <span class="sc-num" id="inProgressProjects">0</span>
+          <span class="sc-label">In Progress</span>
+        </div>
+      </div>
+      <div class="summary-card accent-rose">
+        <div class="sc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="sc-info">
+          <span class="sc-num" id="pendingAlerts">0</span>
+          <span class="sc-label">Pending Alerts</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-col-main">
+        <div class="card">
+          <div class="card-header">
+            <h3>Student Projects</h3>
+            <div class="filter-pills" id="categoryFilter">
+              <button class="pill active" onclick="filterByCategory('')">All</button>
+            </div>
+          </div>
+          <div id="studentCardsList" class="student-cards-list"></div>
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">🚀</div>
+            <p>No students yet. Add your first student project!</p>
+            <button class="btn-primary" onclick="showNewStudentModal()">Add Student</button>
+          </div>
+        </div>
+      </div>
+      <div class="dash-col-side">
+        <div class="card alerts-card">
+          <div class="card-header"><h3>Pending Alerts</h3></div>
+          <div id="alertsList" class="alerts-list">
+            <div class="no-alerts">✅ All caught up!</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Phase Distribution</h3></div>
+          <div class="phase-dist" id="phaseDist"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: STUDENT PROFILE -->
+  <div class="view" id="view-profile">
+    <div class="view-header">
+      <div>
+        <h1 id="profileTitle">Student Profile</h1>
+        <p>Edit student details and project information</p>
+      </div>
+      <div class="view-header-actions">
+        <button class="btn-secondary" onclick="showView('dashboard')">← Back</button>
+        <button class="btn-primary" onclick="saveCurrentStudent()">Save Profile</button>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+      <!-- Student Info -->
+      <div class="card profile-section">
+        <div class="section-title">
+          <div class="section-icon blue">👤</div>
+          <h3>Student Information</h3>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Student Name *</label>
+            <input type="text" id="pStudentName" placeholder="Full name" />
+          </div>
+          <div class="form-group">
+            <label>Student ID</label>
+            <input type="text" id="pStudentId" placeholder="e.g. STU-2024-001" />
+          </div>
+          <div class="form-group">
+            <label>Grade / Class</label>
+            <select id="pGrade">
+              <option value="">Select Grade</option>
+              <option>Grade 6</option><option>Grade 7</option><option>Grade 8</option>
+              <option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Section</label>
+            <input type="text" id="pSection" placeholder="e.g. A, B, Science" />
+          </div>
+          <div class="form-group">
+            <label>School Name</label>
+            <input type="text" id="pSchool" placeholder="School name" />
+          </div>
+          <div class="form-group">
+            <label>Student Email</label>
+            <input type="email" id="pEmail" placeholder="student@school.edu" />
+          </div>
+          <div class="form-group">
+            <label>Mentor Name</label>
+            <input type="text" id="pMentor" placeholder="Mentor full name" />
+          </div>
+          <div class="form-group">
+            <label>Parent Name</label>
+            <input type="text" id="pParentName" placeholder="Parent / Guardian name" />
+          </div>
+          <div class="form-group">
+            <label>Parent Contact</label>
+            <input type="tel" id="pParentContact" placeholder="+91 XXXXXXXXXX" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Project Info -->
+      <div class="card profile-section">
+        <div class="section-title">
+          <div class="section-icon purple">🔬</div>
+          <h3>Project Details</h3>
+        </div>
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label>Project Name *</label>
+            <input type="text" id="pProjectName" placeholder="Give your project a great name" />
+          </div>
+          <div class="form-group span-2">
+            <label>Project Category</label>
+            <select id="pCategory">
+              <option value="">Select Category</option>
+              <optgroup label="Computer Science & AI">
+                <option>Artificial Intelligence (AI)</option>
+                <option>Machine Learning</option>
+                <option>Deep Learning</option>
+                <option>Data Science</option>
+                <option>Computer Science</option>
+                <option>Software Development</option>
+                <option>App Development</option>
+                <option>Web Development</option>
+                <option>Cybersecurity</option>
+                <option>IoT</option>
+                <option>Embedded Systems</option>
+              </optgroup>
+              <optgroup label="Robotics & Engineering">
+                <option>Robotics</option>
+                <option>Automation</option>
+                <option>Electronics</option>
+                <option>Electrical Engineering</option>
+                <option>Mechanical Engineering</option>
+                <option>Civil Engineering</option>
+                <option>Aerospace Engineering</option>
+              </optgroup>
+              <optgroup label="Physical Sciences">
+                <option>Physics</option>
+                <option>Applied Physics</option>
+                <option>Chemistry</option>
+                <option>Organic Chemistry</option>
+                <option>Astronomy</option>
+                <option>Astrophysics</option>
+                <option>Space Science</option>
+                <option>Mathematics</option>
+                <option>Applied Mathematics</option>
+                <option>Statistics</option>
+              </optgroup>
+              <optgroup label="Life Sciences">
+                <option>Biology</option>
+                <option>Biotechnology</option>
+                <option>Bioinformatics</option>
+                <option>Biochemistry</option>
+                <option>Genetics</option>
+                <option>Neuroscience</option>
+                <option>Marine Biology</option>
+                <option>Medical Technology</option>
+                <option>Health Science</option>
+              </optgroup>
+              <optgroup label="Environment & Earth">
+                <option>Environmental Science</option>
+                <option>Earth Science</option>
+                <option>Renewable Energy</option>
+                <option>Sustainability</option>
+                <option>Agriculture Technology</option>
+              </optgroup>
+              <optgroup label="Social & Innovation">
+                <option>Psychology Research</option>
+                <option>Design Thinking</option>
+                <option>Product Development</option>
+                <option>Entrepreneurship</option>
+                <option>Social Innovation</option>
+                <option>Research Project</option>
+                <option>Experimental Project</option>
+                <option>Prototype Development</option>
+                <option>Other</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group span-2">
+            <label>Project Description</label>
+            <textarea id="pDescription" rows="3" placeholder="Describe the project in detail…"></textarea>
+          </div>
+          <div class="form-group span-2">
+            <label>Project Goal</label>
+            <textarea id="pGoal" rows="2" placeholder="What does this project aim to achieve?"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="pStartDate" />
+          </div>
+          <div class="form-group">
+            <label>Expected Completion</label>
+            <input type="date" id="pEndDate" />
+          </div>
+          <div class="form-group">
+            <label>Overall Status</label>
+            <select id="pStatus">
+              <option>Not Started</option>
+              <option>In Progress</option>
+              <option>Under Review</option>
+              <option>Completed</option>
+              <option>On Hold</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Current Progress: <span id="progressVal">0</span>%</label>
+            <input type="range" id="pProgress" min="0" max="100" value="0" oninput="document.getElementById('progressVal').textContent=this.value" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Ring -->
+      <div class="card profile-progress-card">
+        <div class="section-title"><h3>Project Progress</h3></div>
+        <div class="progress-ring-wrap">
+          <svg class="progress-ring" width="160" height="160" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="65" stroke="var(--border)" stroke-width="12" fill="none"/>
+            <circle id="progressRingCircle" cx="80" cy="80" r="65" stroke="var(--accent)" stroke-width="12" fill="none"
+              stroke-dasharray="408.41" stroke-dashoffset="408.41" stroke-linecap="round"
+              transform="rotate(-90 80 80)"/>
+          </svg>
+          <div class="ring-label">
+            <span id="ringPct">0%</span>
+            <small>Progress</small>
+          </div>
+        </div>
+        <div class="status-badge-wrap">
+          <span class="status-badge" id="ringStatus">Not Started</span>
+        </div>
+        <div class="progress-details">
+          <div class="pd-item"><span>Sessions Done</span><strong id="sessionsDoneCount">0 / 12</strong></div>
+          <div class="pd-item"><span>Avg TAT</span><strong id="avgTatDisplay">— hrs</strong></div>
+          <div class="pd-item"><span>Milestones</span><strong id="milestonesCount">0</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: SESSIONS -->
+  <div class="view" id="view-sessions">
+    <div class="view-header">
+      <div>
+        <h1>Session Tracker</h1>
+        <p id="sessionsStudentName">Select a student to view sessions</p>
+      </div>
+      <div class="view-header-actions">
+        <button class="btn-secondary" onclick="showView('dashboard')">← Back</button>
+        <button class="btn-primary" onclick="saveAllSessions()">Save Sessions</button>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card timeline-card">
+      <div class="timeline-header"><h3>Project Roadmap</h3></div>
+      <div class="timeline" id="sessionTimeline"></div>
+    </div>
+
+    <!-- Session Cards -->
+    <div class="sessions-grid" id="sessionsGrid"></div>
+  </div>
+
+  <!-- VIEW: MILESTONES -->
+  <div class="view" id="view-milestones">
+    <div class="view-header">
+      <div>
+        <h1>Milestone Tracker</h1>
+        <p id="milestonesStudentName">Manage project milestones</p>
+      </div>
+      <div class="view-header-actions">
+        <button class="btn-secondary" onclick="showView('dashboard')">← Back</button>
+        <button class="btn-primary" onclick="addMilestone()">+ Add Milestone</button>
+      </div>
+    </div>
+    <div class="kanban-board" id="kanbanBoard">
+      <div class="kanban-col" id="kanban-todo">
+        <div class="kanban-col-header todo">📋 To Do</div>
+        <div class="kanban-items" id="items-todo"></div>
+      </div>
+      <div class="kanban-col" id="kanban-inprogress">
+        <div class="kanban-col-header inprogress">⚡ In Progress</div>
+        <div class="kanban-items" id="items-inprogress"></div>
+      </div>
+      <div class="kanban-col" id="kanban-review">
+        <div class="kanban-col-header review">🔍 Review</div>
+        <div class="kanban-items" id="items-review"></div>
+      </div>
+      <div class="kanban-col" id="kanban-done">
+        <div class="kanban-col-header done">✅ Done</div>
+        <div class="kanban-items" id="items-done"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: ANALYTICS -->
+  <div class="view" id="view-analytics">
+    <div class="view-header">
+      <h1>Analytics & Insights</h1>
+      <p>Performance metrics and progress insights</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="card analytics-card">
+        <h3>Completion Rate by Phase</h3>
+        <div class="bar-chart" id="phaseBarChart"></div>
+      </div>
+      <div class="card analytics-card">
+        <h3>Status Distribution</h3>
+        <div class="donut-chart-wrap" id="statusDonut"></div>
+      </div>
+      <div class="card analytics-card span-2">
+        <h3>Session Progress per Student</h3>
+        <div id="studentProgressBars"></div>
+      </div>
+      <div class="card analytics-card">
+        <h3>Category Distribution</h3>
+        <div id="categoryBars"></div>
+      </div>
+      <div class="card analytics-card">
+        <h3>TAT Overview</h3>
+        <div id="tatSummary"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: ALL STUDENTS -->
+  <div class="view" id="view-students">
+    <div class="view-header">
+      <h1>All Students</h1>
+      <p>Complete student roster</p>
+    </div>
+    <div class="card">
+      <table class="students-table" id="studentsTable">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Grade</th>
+            <th>Project</th>
+            <th>Category</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th>Sessions</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL: NEW STUDENT -->
+<div class="modal-overlay" id="newStudentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add New Student</h2>
+      <button onclick="closeModal('newStudentModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Student Name *</label>
+          <input type="text" id="mStudentName" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Student ID</label>
+          <input type="text" id="mStudentId" placeholder="STU-2024-001" />
+        </div>
+        <div class="form-group">
+          <label>Grade</label>
+          <select id="mGrade">
+            <option value="">Select</option>
+            <option>Grade 6</option><option>Grade 7</option><option>Grade 8</option>
+            <option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Project Name *</label>
+          <input type="text" id="mProjectName" placeholder="Project name" />
+        </div>
+        <div class="form-group">
+          <label>Mentor Name</label>
+          <input type="text" id="mMentor" placeholder="Mentor name" />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="mCategory">
+            <option value="">Select</option>
+            <option>Artificial Intelligence (AI)</option>
+            <option>Machine Learning</option>
+            <option>Robotics</option>
+            <option>Computer Science</option>
+            <option>Biology</option>
+            <option>Chemistry</option>
+            <option>Physics</option>
+            <option>Mathematics</option>
+            <option>Environmental Science</option>
+            <option>Entrepreneurship</option>
+            <option>Social Innovation</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('newStudentModal')">Cancel</button>
+      <button class="btn-primary" onclick="createNewStudent()">Create Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: MILESTONE -->
+<div class="modal-overlay" id="milestoneModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add Milestone</h2>
+      <button onclick="closeModal('milestoneModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label>Milestone Name *</label>
+          <input type="text" id="mMilestoneName" placeholder="e.g. Prototype Complete" />
+        </div>
+        <div class="form-group">
+          <label>Deadline</label>
+          <input type="date" id="mMilestoneDeadline" />
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="mMilestonePriority">
+            <option>High</option><option>Medium</option><option>Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Completion %</label>
+          <input type="number" id="mMilestoneProgress" min="0" max="100" value="0" />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="mMilestoneStatus">
+            <option>To Do</option><option>In Progress</option>
+            <option>Review</option><option>Done</option>
+          </select>
+        </div>
+        <div class="form-group span-2">
+          <label>Remarks</label>
+          <textarea id="mMilestoneRemarks" rows="2" placeholder="Notes…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('milestoneModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveMilestone()">Add Milestone</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
